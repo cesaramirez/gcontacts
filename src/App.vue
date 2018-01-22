@@ -71,7 +71,7 @@
     >
       <v-toolbar-title style="width: 300px" class="ml-0 pl-3">
         <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-        <span class="hidden-sm-and-down">Google Contacts</span>
+        <span class="hidden-sm-and-down">GContacts</span>
       </v-toolbar-title>
       <v-text-field
         solo-inverted
@@ -127,6 +127,7 @@
     </v-btn>
     <v-dialog v-model="dialog" width="800px">
       <v-card>
+        <form @submit.prevent="saveContact">
         <v-card-title
           class="grey lighten-4 py-4 title"
         >
@@ -144,6 +145,7 @@
                 </v-avatar>
                 <v-text-field
                   placeholder="Name"
+                  v-model="contact.name"
                 ></v-text-field>
               </v-layout>
             </v-flex>
@@ -151,31 +153,36 @@
               <v-text-field
                 prepend-icon="business"
                 placeholder="Company"
+                v-model="contact.company"
               ></v-text-field>
             </v-flex>
             <v-flex xs6>
               <v-text-field
                 placeholder="Job title"
+                v-model="contact.job_title"
               ></v-text-field>
             </v-flex>
             <v-flex xs12>
               <v-text-field
                 prepend-icon="mail"
                 placeholder="Email"
+                v-model="contact.email"
               ></v-text-field>
             </v-flex>
             <v-flex xs12>
               <v-text-field
                 type="tel"
                 prepend-icon="phone"
-                placeholder="(000) 000 - 0000"
-                mask="phone"
+                placeholder="(000) 0000 - 0000"
+                v-model="contact.phone"
+                mask="(###) #### - ####"
               ></v-text-field>
             </v-flex>
             <v-flex xs12>
               <v-text-field
                 prepend-icon="notes"
                 placeholder="Notes"
+                v-model="contact.notes"
               ></v-text-field>
             </v-flex>
           </v-layout>
@@ -184,54 +191,97 @@
           <v-btn flat color="primary">More</v-btn>
           <v-spacer></v-spacer>
           <v-btn flat color="primary" @click="dialog = false">Cancel</v-btn>
-          <v-btn flat @click="dialog = false">Save</v-btn>
+          <v-btn flat type="submit">Save</v-btn>
         </v-card-actions>
+        </form>
       </v-card>
     </v-dialog>
   </v-app>
 </template>
 
 <script>
-  export default {
-    data: () => ({
-      dialog: false,
-      drawer: null,
-      dark: true,
-      items: [
-        { icon: 'contacts', text: 'Contacts' },
-        { icon: 'history', text: 'Frequently contacted' },
-        { icon: 'content_copy', text: 'Duplicates' },
-        {
-          icon: 'keyboard_arrow_up',
-          'icon-alt': 'keyboard_arrow_down',
-          text: 'Labels',
-          model: true,
-          children: [
-            { icon: 'add', text: 'Create label' }
-          ]
-        },
-        {
-          icon: 'keyboard_arrow_up',
-          'icon-alt': 'keyboard_arrow_down',
-          text: 'More',
-          model: false,
-          children: [
-            { text: 'Import' },
-            { text: 'Export' },
-            { text: 'Print' },
-            { text: 'Undo changes' },
-            { text: 'Other contacts' }
-          ]
-        },
-        { icon: 'settings', text: 'Settings' },
-        { icon: 'chat_bubble', text: 'Send feedback' },
-        { icon: 'help', text: 'Help' },
-        { icon: 'phonelink', text: 'App downloads' },
-        { icon: 'keyboard', text: 'Go to the old version' }
-      ]
-    }),
-    props: {
-      source: String
+import db from "./plugins/firebaseInit.js";
+import uuidv4 from "uuid/v4";
+export default {
+  data: () => ({
+    dialog: false,
+    drawer: null,
+    dark: true,
+    items: [
+      { icon: "contacts", text: "Contacts" },
+      { icon: "history", text: "Frequently contacted" },
+      { icon: "content_copy", text: "Duplicates" },
+      {
+        icon: "keyboard_arrow_up",
+        "icon-alt": "keyboard_arrow_down",
+        text: "Labels",
+        model: true,
+        children: [{ icon: "add", text: "Create label" }]
+      },
+      {
+        icon: "keyboard_arrow_up",
+        "icon-alt": "keyboard_arrow_down",
+        text: "More",
+        model: false,
+        children: [
+          { text: "Import" },
+          { text: "Export" },
+          { text: "Print" },
+          { text: "Undo changes" },
+          { text: "Other contacts" }
+        ]
+      },
+      { icon: "settings", text: "Settings" },
+      { icon: "chat_bubble", text: "Send feedback" },
+      { icon: "help", text: "Help" },
+      { icon: "phonelink", text: "App downloads" },
+      { icon: "keyboard", text: "Go to the old version" }
+    ],
+    contact: {
+      name: "",
+      email: "",
+      phone: "",
+      company: "",
+      job_title: "",
+      notes: ""
+    }
+  }),
+  props: {
+    source: String
+  },
+  methods: {
+    saveContact() {
+      db
+        .collection("contacts")
+        .add({
+          name: this.contact.name,
+          email: this.contact.email,
+          phone: this.contact.phone,
+          company: this.contact.company,
+          job_title: this.contact.job_title,
+          notes: this.contact.notes,
+          slug: uuidv4()
+        })
+        .then(docRef => {
+          console.log("Document written with ID: ", docRef.id);
+          this.dialog = false;
+        })
+        .catch(function(error) {
+          console.error("Error adding document: ", error);
+        });
+    },
+    generateUUID() {
+      let d = new Date().getTime();
+      let uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+        /[xy]/g,
+        function(c) {
+          let r = ((d + Math.random() * 16) % 16) | 0;
+          d = Math.floor(d / 16);
+          return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+        }
+      );
+      return uuid;
     }
   }
+};
 </script>

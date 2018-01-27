@@ -101,9 +101,6 @@
 </template>
 
 <script>
-import db from "./plugins/firebaseInit.js";
-import uuidv4 from "uuid/v4";
-import { format } from 'libphonenumber-js'
 import Modal from './components/Dialog.vue'
 
 export default {

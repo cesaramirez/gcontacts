@@ -96,88 +96,7 @@
         <router-view></router-view>
       </v-container>
     </v-content>
-    <v-btn
-      fab
-      bottom
-      right
-      color="pink"
-      dark
-      fixed
-      @click.stop="dialog = !dialog"
-    >
-      <v-icon>add</v-icon>
-    </v-btn>
-    <v-dialog v-model="dialog" width="800px">
-      <v-card>
-        <form @submit.prevent="saveContact">
-        <v-card-title
-          class="grey lighten-4 py-4 title"
-        >
-          Create contact
-        </v-card-title>
-        <v-container grid-list-sm class="pa-4">
-          <v-layout row wrap>
-            <v-flex xs12 align-center justify-space-between>
-              <v-layout align-center>
-                <v-avatar size="40px" class="mr-3">
-                  <img
-                    src="//ssl.gstatic.com/s2/oz/images/sge/grey_silhouette.png"
-                    alt=""
-                  >
-                </v-avatar>
-                <v-text-field
-                  placeholder="Name"
-                  v-model="contact.name"
-                ></v-text-field>
-              </v-layout>
-            </v-flex>
-            <v-flex xs6>
-              <v-text-field
-                prepend-icon="business"
-                placeholder="Company"
-                v-model="contact.company"
-              ></v-text-field>
-            </v-flex>
-            <v-flex xs6>
-              <v-text-field
-                placeholder="Job title"
-                v-model="contact.job_title"
-              ></v-text-field>
-            </v-flex>
-            <v-flex xs12>
-              <v-text-field
-                prepend-icon="mail"
-                placeholder="Email"
-                v-model="contact.email"
-              ></v-text-field>
-            </v-flex>
-            <v-flex xs12>
-              <v-text-field
-                type="tel"
-                prepend-icon="phone"
-                placeholder="0000 - 0000"
-                v-model="contact.phone"
-                mask="#### - ####"
-              ></v-text-field>
-            </v-flex>
-            <v-flex xs12>
-              <v-text-field
-                prepend-icon="notes"
-                placeholder="Notes"
-                v-model="contact.notes"
-              ></v-text-field>
-            </v-flex>
-          </v-layout>
-        </v-container>
-        <v-card-actions>
-          <v-btn flat color="primary">More</v-btn>
-          <v-spacer></v-spacer>
-          <v-btn flat color="primary" @click="dialog = false">Cancel</v-btn>
-          <v-btn flat type="submit">Save</v-btn>
-        </v-card-actions>
-        </form>
-      </v-card>
-    </v-dialog>
+    <modal type="create"></modal>
   </v-app>
 </template>
 
@@ -185,10 +104,14 @@
 import db from "./plugins/firebaseInit.js";
 import uuidv4 from "uuid/v4";
 import { format } from 'libphonenumber-js'
+import Modal from './components/Dialog.vue'
 
 export default {
+  components: {
+    Modal
+  },
   data: () => ({
-    dialog: false,
+    // dialog: false,
     drawer: null,
     dark: true,
     items: [
@@ -222,41 +145,10 @@ export default {
       { icon: "help", text: "Help" },
       { icon: "phonelink", text: "App downloads" },
       { icon: "keyboard", text: "Go to the old version" }
-    ],
-    contact: {
-      name: "",
-      email: "",
-      phone: "",
-      company: "",
-      job_title: "",
-      notes: ""
-    }
+    ]
   }),
   props: {
     source: String
-  },
-  methods: {
-    saveContact() {
-      console.log(format(this.contact.phone, 'SV', 'International'))
-      db
-        .collection("contacts")
-        .add({
-          name: this.contact.name,
-          email: this.contact.email,
-          phone: format(this.contact.phone, 'SV', 'International'),
-          company: this.contact.company,
-          job_title: this.contact.job_title,
-          notes: this.contact.notes,
-          slug: uuidv4()
-        })
-        .then(docRef => {
-          console.log("Document written with ID: ", docRef.id);
-          this.dialog = false;
-        })
-        .catch(error => {
-          console.error("Error adding document: ", error);
-        });
-    }
   }
 };
 </script>

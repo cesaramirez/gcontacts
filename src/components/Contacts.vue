@@ -12,8 +12,7 @@
               <v-flex xs3>{{ contact.email }}</v-flex>
               <v-flex xs2>{{ contact.phone }}</v-flex>
               <v-flex xs2>
-                  Show
-                </v-btn>
+                <modal :contact="contact" type="show"></modal>
               </v-flex>
             </v-layout>
           </v-card-text>
@@ -24,47 +23,47 @@
 </template>
 
 <script>
-  import db from "../plugins/firebaseInit.js";
-  import Avatar from "vue-avatar";
+import db from "../plugins/firebaseInit.js";
+import Avatar from "vue-avatar";
+import Modal from "./Dialog.vue";
 
-  export default {
-    data() {
-      return {
-        contacts: []
-      };
-    },
-    components: {
-      Avatar
-    },
-    mounted() {
-      db
-        .collection("contacts")
-        .get()
-        .then(querySnapshot => {
-          querySnapshot.forEach(doc => {
-            let data = {
-              id: doc.id,
-              name: doc.data().name,
-              email: doc.data().email,
-              phone: doc.data().phone,
-              job_title: doc.data().job_title,
-              company: doc.data().company,
-              slug: doc.data().slug
-            };
-            this.contacts.push(data);
-          });
+export default {
+  data() {
+    return {
+      contacts: []
+    };
+  },
+  components: {
+    Avatar,
+    Modal
+  },
+  mounted() {
+    db
+      .collection("contacts")
+      .get()
+      .then(querySnapshot => {
+        querySnapshot.forEach(doc => {
+          let data = {
+            id: doc.id,
+            name: doc.data().name,
+            email: doc.data().email,
+            phone: doc.data().phone,
+            job_title: doc.data().job_title,
+            company: doc.data().company,
+            slug: doc.data().slug
+          };
+          this.contacts.push(data);
         });
-    },
-    methods: {
-      show() {
-        console.log('show');
-      }
+      });
+  },
+  methods: {
+    show() {
+      console.log("show");
     }
-  };
-
+  }
+};
 </script>
 
 <style scoped>
-
 
 </style>

@@ -23,15 +23,10 @@
               <a href="#!" class="body-2 black--text">EDIT</a>
             </v-flex>
           </v-layout>
-          <v-list-group v-else-if="item.children" v-model="item.model" no-action :key="item.text">
-            <v-list-tile slot="item" @click="">
-              <v-list-tile-action>
-                <v-icon>{{ item.model ? item.icon : item['icon-alt'] }}</v-icon>
-              </v-list-tile-action>
+          <v-list-group v-else-if="item.children" v-model="item.model" :key="item.text" :prepend-icon="item.icon">
+             <v-list-tile slot="activator" class="my-2">
               <v-list-tile-content>
-                <v-list-tile-title>
-                  {{ item.text }}
-                </v-list-tile-title>
+                <v-list-tile-title>{{ item.text }}</v-list-tile-title>
               </v-list-tile-content>
             </v-list-tile>
             <v-list-tile
@@ -97,21 +92,8 @@
       </v-btn>
     </v-toolbar>
     <v-content>
-      <v-container fluid fill-height>
-        <v-layout justify-center align-center>
-          <v-tooltip right>
-            <v-btn
-              icon
-              large
-              :href="source"
-              target="_blank"
-              slot="activator"
-            >
-              <v-icon large>code</v-icon>
-            </v-btn>
-            <span>Source</span>
-          </v-tooltip>
-        </v-layout>
+      <v-container fluid>
+        <router-view></router-view>
       </v-container>
     </v-content>
     <v-btn
@@ -173,9 +155,9 @@
               <v-text-field
                 type="tel"
                 prepend-icon="phone"
-                placeholder="(000) 0000 - 0000"
+                placeholder="0000 - 0000"
                 v-model="contact.phone"
-                mask="(###) #### - ####"
+                mask="#### - ####"
               ></v-text-field>
             </v-flex>
             <v-flex xs12>
@@ -202,6 +184,8 @@
 <script>
 import db from "./plugins/firebaseInit.js";
 import uuidv4 from "uuid/v4";
+import { format } from 'libphonenumber-js'
+
 export default {
   data: () => ({
     dialog: false,
@@ -210,18 +194,20 @@ export default {
     items: [
       { icon: "contacts", text: "Contacts" },
       { icon: "history", text: "Frequently contacted" },
-      { icon: "content_copy", text: "Duplicates" },
+      { icon: "content_copy", text: "Duplicates"},
       {
-        icon: "keyboard_arrow_up",
+        icon: "label",
         "icon-alt": "keyboard_arrow_down",
         text: "Labels",
-        model: true,
+        model: false,
+        divider: true,
         children: [{ icon: "add", text: "Create label" }]
       },
       {
-        icon: "keyboard_arrow_up",
+        icon: "more_horiz",
         "icon-alt": "keyboard_arrow_down",
         text: "More",
+        divider: true,
         model: false,
         children: [
           { text: "Import" },
@@ -251,12 +237,13 @@ export default {
   },
   methods: {
     saveContact() {
+      console.log(format(this.contact.phone, 'SV', 'International'))
       db
         .collection("contacts")
         .add({
           name: this.contact.name,
           email: this.contact.email,
-          phone: this.contact.phone,
+          phone: format(this.contact.phone, 'SV', 'International'),
           company: this.contact.company,
           job_title: this.contact.job_title,
           notes: this.contact.notes,
@@ -266,21 +253,9 @@ export default {
           console.log("Document written with ID: ", docRef.id);
           this.dialog = false;
         })
-        .catch(function(error) {
+        .catch(error => {
           console.error("Error adding document: ", error);
         });
-    },
-    generateUUID() {
-      let d = new Date().getTime();
-      let uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
-        /[xy]/g,
-        function(c) {
-          let r = ((d + Math.random() * 16) % 16) | 0;
-          d = Math.floor(d / 16);
-          return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
-        }
-      );
-      return uuid;
     }
   }
 };

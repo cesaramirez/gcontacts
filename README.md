@@ -1,4 +1,4 @@
-# G Contacts
+# G Contacts (WIP)
 
 > Build a Vue Contact App with [Firebase](http://firebase.google.com/) and [Vuetify](http://vuetifyjs.com/)
 
